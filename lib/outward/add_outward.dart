@@ -4,6 +4,7 @@ import 'package:adaptive_scrollbar/adaptive_scrollbar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/config.dart';
 import '../utils/custom_appbar.dart';
 import '../utils/custom_drawer.dart';
@@ -40,6 +41,7 @@ class _AddOutwardState extends State<AddOutward> {
   final vehicleNoController = TextEditingController();
   final vehicleOutTimeController = TextEditingController();
   final invoiceDCNoController = TextEditingController();
+  final searchInvNoController = TextEditingController();
   final supplierNameController = TextEditingController();
   final searchSupplierNameController = TextEditingController();
   final supplierCodeController = TextEditingController();
@@ -149,6 +151,18 @@ class _AddOutwardState extends State<AddOutward> {
   String _formatTime(TimeOfDay time) {
     return 'PT${time.hour}H${time.minute}M00S';
   }
+  String? userName;
+  String? plant;
+  Future<void> getLoginData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName');
+      plant = prefs.getString('plant');
+    });
+  }
+  void initializeData() async {
+    await getLoginData();
+  }
   @override
   void initState() {
     // TODO: implement initState
@@ -165,6 +179,7 @@ class _AddOutwardState extends State<AddOutward> {
     entryDateTime = "${entryDate}T00:00:00";
     invoiceDateTime = "${invoiceDate}T00:00:00";
     getGateOutNo();
+    initializeData();
     getInitialData();
   }
 
@@ -232,7 +247,7 @@ class _AddOutwardState extends State<AddOutward> {
                             color: Colors.blue,
                             onPressed: () {
                               if (supplierNameController.text.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Select Supplier Name")));
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Select Customer Name")));
                                 return;
                               }
                               if (invoiceDateController.text.isEmpty) {
@@ -251,6 +266,14 @@ class _AddOutwardState extends State<AddOutward> {
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Enter Security Name")));
                                 return;
                               }
+                              if (invoiceDCNoController.text.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Enter Invoice No")));
+                                return;
+                              }
+                              if (invoiceDCTypeController.text.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Enter Invoice Type")));
+                                return;
+                              }
                               Map savedOutward = {
                                 "GateOutwardNo": gateOutwardNoController.text,
                                 "EntryDate": entryDateTime,
@@ -266,9 +289,10 @@ class _AddOutwardState extends State<AddOutward> {
                                 "Cancelled": canceledController.text,
                                 "EnteredBy": enteredByController.text,
                                 "Remarks": remarksController.text,
+                                // "CreatedBy": userName,
                               };
-                              print('-------- saves outward -----------');
-                              print(savedOutward);
+                              // print('-------- saves outward -----------');
+                              // print(savedOutward);
                               postOutWardApi(savedOutward, context);
                             },child: const Text("Save",style: TextStyle(color: Colors.white)),),
                         )
@@ -520,10 +544,10 @@ class _AddOutwardState extends State<AddOutward> {
                                                               loading = false;
                                                               supplierNameController.text = value["name"];
                                                               supplierCodeController.text = value["code"];
-                                                              // poNoList=[];
-                                                              // purchaseOrders = [];
-                                                              // purchaseOrderController.clear();
-                                                              // poTypeController.clear();
+                                                              poNoList=[];
+                                                              purchaseOrders = [];
+                                                              invoiceDCNoController.clear();
+                                                              invoiceDCTypeController.clear();
                                                             });
                                                             // getPOData(value["code"]);
                                                           });
@@ -575,8 +599,8 @@ class _AddOutwardState extends State<AddOutward> {
                                                               supplierCodeController.text = value;
                                                               poNoList=[];
                                                               purchaseOrders = [];
-                                                              // purchaseOrderController.clear();
-                                                              // poTypeController.clear();
+                                                              invoiceDCNoController.clear();
+                                                              invoiceDCTypeController.clear();
                                                             });
                                                             // getPOData(value);
                                                           });
@@ -597,13 +621,42 @@ class _AddOutwardState extends State<AddOutward> {
                                                     SizedBox(
                                                       height: 30,
                                                       width: 200,
-                                                      child:   TextFormField(
+                                                      child:  TextFormField(
                                                         style: const TextStyle(fontSize: 11),
                                                         // autofocus: true,
                                                         controller: invoiceDCNoController,
-                                                        decoration: customerFieldDecoration(hintText: '',controller: invoiceDCNoController),
+                                                        decoration:  const InputDecoration(
+                                                          hintText: " Select Invoice No",
+                                                          hintStyle: TextStyle(fontSize: 11,),
+                                                          border: OutlineInputBorder(
+                                                              borderSide: BorderSide(color:  Colors.blue)
+                                                          ),
+                                                          contentPadding: EdgeInsets.fromLTRB(12, 00, 0, 0),
+                                                          suffixIcon: Icon(
+                                                            Icons.arrow_drop_down_outlined,
+                                                            color: Colors.blue,size: 16,
+                                                          ),
+                                                          enabledBorder:OutlineInputBorder(borderSide: BorderSide(color: mTextFieldBorder)),
+                                                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+                                                        ),
                                                         onChanged: (value){
 
+                                                        },
+                                                        onTap: () {
+                                                          showDialog(
+                                                            context: context,
+                                                            builder: (context) => _showInvoiceNo(),
+                                                          ).then((value) {
+                                                            setState(() {
+                                                              loading = false;
+                                                              invoiceDCNoController.text = value;
+                                                              // poNoList=[];
+                                                              // purchaseOrders = [];
+                                                              // invoiceDCNoController.clear();
+                                                              // invoiceDCTypeController.clear();
+                                                            });
+                                                            // getPOData(value);
+                                                          });
                                                         },
                                                       ),
                                                     ),
@@ -840,8 +893,6 @@ class _AddOutwardState extends State<AddOutward> {
 
   Future postOutWardApi(Map tempData, BuildContext context)async{
     String url = "${StaticData.apiPostURL}/YY1_GATEENTRYOUT_CDS/YY1_GATEENTRYOUT";
-    print('------- out post url ----------');
-    print(url);
     try{
       final response = await http.post(
         Uri.parse(url),
@@ -860,7 +911,7 @@ class _AddOutwardState extends State<AddOutward> {
               context: context,
               builder: (context) {
                 return AlertDialog(
-                  title:  Text('GateInwardNo: ${gateOutwardNoController.text}'),
+                  title:  Text('GateOutwardNo: ${gateOutwardNoController.text}'),
                   content:  const Text("Data posted successfully"),
                   actions: [
                     TextButton(
@@ -913,7 +964,7 @@ class _AddOutwardState extends State<AddOutward> {
               context: context,
               builder: (context) {
                 return AlertDialog(
-                  title:  Text('GateInwardNo: ${gateOutwardNoController.text}'),
+                  title:  Text('GateOutwardNo: ${gateOutwardNoController.text}'),
                   content:  const Text("Instance with the same key already exists"),
                   actions: [
                     TextButton(
@@ -967,37 +1018,48 @@ class _AddOutwardState extends State<AddOutward> {
     }
   }
   Future getGateOutNo() async{
-    String url = "${StaticData.apiURL}/YY1_GATEENTRYOUT_CDS/YY1_GATEENTRYOUT?orderby=GateOutwardNo desc";
-    try{
+    String url = "${StaticData.apiURL}/YY1_GATEENTRYOUT_CDS/YY1_GATEENTRYOUT?orderby=GateOutwardNo desc&filter=Plant eq '${widget.plantValue}'";
+    try {
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          'Authorization': StaticData.basicAuth,
-        },
+        headers: {'Authorization': StaticData.basicAuth},
       );
-      if(response.statusCode == 200){
+      if (response.statusCode == 200) {
         Map tempData = json.decode(response.body);
         List results = tempData['d']['results'];
-
-        if(results.isNotEmpty){
-          String firstGateInwardNo = results[0]['GateOutwardNo'];
-          int nextGateInwardNo = int.parse(firstGateInwardNo) + 1;
-          gateOutwardNoController.text = nextGateInwardNo.toString();
-          setState(() {
-            loading = false;
-          });
-        }
-        if(results.isEmpty){
-          setState(() {
-            loading = false;
-          });
-          if(mounted){
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No Data Found")));
+        int nextGateOutwardNo = 1;
+        if (results.isNotEmpty) {
+          String firstGateOutwardNo = results[0]['GateOutwardNo'];
+          nextGateOutwardNo = int.parse(firstGateOutwardNo) + 1;
+        } else {
+          if (widget.plantValue == '1101') {
+            nextGateOutwardNo = 1000000001;
+          } else if (widget.plantValue == '1102') {
+            nextGateOutwardNo = 2000000001;
+          } else if (widget.plantValue == '1103') {
+            nextGateOutwardNo = 3000000001;
+          } else if (widget.plantValue == '1104') {
+            nextGateOutwardNo = 4000000001;
+          }else if (widget.plantValue == '1105') {
+            nextGateOutwardNo = 5000000001;
+          }else if (widget.plantValue == '1106') {
+            nextGateOutwardNo = 6000000001;
+          }else if (widget.plantValue == '1107') {
+            nextGateOutwardNo = 7000000001;
           }
         }
+        gateOutwardNoController.text = nextGateOutwardNo.toString();
+        setState(() {
+          loading = false;
+        });
+      } else {
+        print('Error fetching GateOutwardNo: ${response.statusCode}');
+        setState(() {
+          loading = false;
+        });
       }
-    }catch(e){
-      print('Error fetching GateInwardNo: $e');
+    } catch (e) {
+      print('Error fetching GateOutwardNo: $e');
       setState(() {
         loading = false;
       });
@@ -1082,10 +1144,60 @@ class _AddOutwardState extends State<AddOutward> {
       return null;
     }
   }
+  Future<void> getInvNo(String customerCode) async {
+    String url = "${StaticData.apiURL}/API_BILLING_DOCUMENT_SRV/A_BillingDocument?filter=InvoiceClearingStatus ne 'C' and BillingDocumentType eq 'F2' and BillingDocumentIsCancelled eq false and SoldToParty eq '$customerCode'&expand=to_Item";
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Authorization': StaticData.basicAuth},
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonDataMap = json.decode(response.body);
+        List<dynamic> results = jsonDataMap['d']['results'];
+        if(results.isEmpty || results == null){
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No Invoice Number !')));
+          }
+          setState(() {
+            invoiceDCTypeController.clear();
+            invoiceDCNoController.clear();
+            purchaseOrders = [];
+            poNoList = [];
+            loading = false;
+          });
+        }
+        else if(results != null && results.isNotEmpty){
+          setState(() {
+            purchaseOrders = results;
+            poNoList = results.toList();
+            loading = false;
+          });
+        }else {
+          setState(() {
+            loading = false;
+          });
+          print('Error: Unable to find results in response body');
+          return;
+        }
+      } else {
+        print('Error fetching GateOutwardNo: ${response.statusCode}');
+        setState(() {
+          loading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching GateOutwardNo: $e');
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+
 
   _showSupplierDialog(){
     return AlertDialog(
-      title: const Text("Select Supplier Code"),
+      title: const Text("Select Customer Code"),
       content: StatefulBuilder(
         builder: (context, setState) {
           return SizedBox(
@@ -1097,7 +1209,7 @@ class _AddOutwardState extends State<AddOutward> {
                       padding: const EdgeInsets.all(8.0),
                       child: TextField(
                         controller: searchSupplierCodeController,
-                        decoration: const InputDecoration(labelText: "Search Supplier Code"),
+                        decoration: const InputDecoration(labelText: "Search Customer Code"),
                         onChanged: (value) {
                           setState((){
                             if(value.isEmpty || value == ""){
@@ -1122,6 +1234,7 @@ class _AddOutwardState extends State<AddOutward> {
                           setState((){
                             supplierNameController.text = supplierCodeList[index]["CustomerName"];
                             // purchaseOrderController.clear();
+                            getInvNo(supplierCodeList[index]["Customer"]);
                           });
                         },
                         child: ListTile(
@@ -1148,7 +1261,7 @@ class _AddOutwardState extends State<AddOutward> {
   }
   _showSupplierNameDialog(){
     return AlertDialog(
-      title: const Text("Select Supplier Name"),
+      title: const Text("Select Customer Name"),
       content: StatefulBuilder(
         builder: (context, setState) {
           return SizedBox(
@@ -1160,7 +1273,7 @@ class _AddOutwardState extends State<AddOutward> {
                       padding: const EdgeInsets.all(8.0),
                       child: TextField(
                         controller: searchSupplierNameController,
-                        decoration: const InputDecoration(labelText: "Search Supplier Name"),
+                        decoration: const InputDecoration(labelText: "Search Customer Name"),
                         onChanged: (value) {
                           setState((){
                             if(value.isEmpty || value == ""){
@@ -1189,6 +1302,7 @@ class _AddOutwardState extends State<AddOutward> {
                               }
                           );
                           supplierCodeController.text = supplierCodeList[index]["Customer"];
+                          getInvNo(supplierCodeList[index]["Customer"]);
                         },
                         child: ListTile(
                           title: Text(supplierCodeList[index]["CustomerName"].toString()),
@@ -1268,6 +1382,163 @@ class _AddOutwardState extends State<AddOutward> {
         return secName.contains(value.toLowerCase());
       }).toList();
     });
+  }
+  _showInvoiceNo(){
+    return AlertDialog(
+      title: const Text("Select Invoice No"),
+      content: StatefulBuilder(
+        builder: (context, setState) {
+          return SizedBox(
+            height: 500,
+            child: Column(
+              children: [
+                Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: TextField(
+                        controller: searchInvNoController,
+                        decoration: const InputDecoration(labelText: "Search Invoice No"),
+                        onChanged: (value) {
+                          setState((){
+                            if(value.isEmpty || value == ""){
+                              poNoList = [];
+                            }else{
+                              poNoList = purchaseOrders.where((item) =>
+                                  item['BillingDocument'].toString().contains(value)).toList();
+                            }
+                            // filterPONo(value);
+                          });
+                        },
+                      ),
+                    )
+                ),
+                SizedBox(
+                  width: 1200,
+                  height: 400,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: poNoList.length,
+                    itemBuilder: (context, index) {
+                      var purchaseOrder = poNoList[index];
+                      var toItems = poNoList[index]["to_Item"];
+                      var widgets = <Widget>[];
+                      var toItemResult = toItems['results'];
+                      for (var item in toItemResult) {
+                        var purchaseOrderItem = item['results'];
+                        var itemCode = item['Material'];
+                        // var itemName = item['Material'];
+                        var itemQty = item['BillingQuantity'];
+                        var itemUom = item['BillingQuantityUnit'];
+                        var itemPrice = item['NetAmount'];
+                        var itemGrossAmt = item['GrossAmount'];
+                        var poLineId = item['BillingDocumentItem'];
+                        var poPlant = item['Plant'];
+                        widgets.add(
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                  width: 100,
+                                  child: Center(child: Text(poLineId.toString()))
+                              ),
+                              SizedBox(
+                                  width: 100,
+                                  child: Center(child: Text(poPlant ??""))
+                              ),
+                              SizedBox(
+                                  width: 100,
+                                  child: Center(child: Text(itemCode ??""))
+                              ),
+                              // SizedBox(
+                              //     width: 400,
+                              //     child: Center(child: Text(itemName??""))
+                              // ),
+                              SizedBox(
+                                  width: 100,
+                                  child: Center(child: Text(itemUom ??""))
+                              ),
+                              SizedBox(
+                                  width: 100,
+                                  child: Center(child: Text(itemQty.toString()))
+                              ),
+                              SizedBox(
+                                  width: 100,
+                                  child: Center(child: Text(itemPrice.toString()))
+                              ),
+                              SizedBox(
+                                  width: 100,
+                                  child: Center(child: Text(itemGrossAmt.toString()))
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      return InkWell(
+                        onTap: () {
+                          setState(() {
+                            invoiceDCTypeController.text = purchaseOrder['BillingDocumentType'];
+                          });
+                          Navigator.of(context).pop(purchaseOrder['BillingDocument']);
+                        },
+                        child: ListTile(
+                          title: Text(purchaseOrder['BillingDocument']),
+                          subtitle: Column(
+                            children: [
+                              const Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(
+                                      width: 100,
+                                      child: Center(child: Text("Line No",style: TextStyle(fontWeight: FontWeight.bold),))
+                                  ),
+                                  SizedBox(
+                                      width: 100,
+                                      child: Center(child: Text("Plant",style: TextStyle(fontWeight: FontWeight.bold),))
+                                  ),
+                                  SizedBox(
+                                      width: 100,
+                                      child: Center(child: Text("Item Code",style: TextStyle(fontWeight: FontWeight.bold),))
+                                  ),
+                                  // SizedBox(
+                                  //     width: 400,
+                                  //     child: Center(child: Text("Item Name",style: TextStyle(fontWeight: FontWeight.bold),))
+                                  // ),
+                                  SizedBox(
+                                      width: 100,
+                                      child: Center(child: Text("UOM",style: TextStyle(fontWeight: FontWeight.bold),))
+                                  ),
+                                  SizedBox(
+                                      width: 100,
+                                      child: Center(child: Text("Qty",style: TextStyle(fontWeight: FontWeight.bold),))
+                                  ),
+                                  SizedBox(
+                                      width: 100,
+                                      child: Center(child: Text("Price",style: TextStyle(fontWeight: FontWeight.bold),))
+                                  ),
+                                  SizedBox(
+                                      width: 100,
+                                      child: Center(child: Text("Value",style: TextStyle(fontWeight: FontWeight.bold),))
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: widgets,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },),
+                ),
+              ],
+            ),
+          );
+        },),
+    );
   }
 
   customerFieldDecoration( {required TextEditingController controller, required String hintText, bool? error, Function? onTap}) {

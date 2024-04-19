@@ -160,7 +160,8 @@ Future<Uint8List> inwardPdfGen2(Map filteredList) async {
                                               children: [
                                                 Container(width: textWidth,child: Text("Supplier Name", style: fontSize9),),
                                                 SizedBox(width: 5,child: Text(":")),
-                                                Text("${filteredList["SupplierName"]??""}", style: fontSize9),
+                                                // Text("${filteredList["SupplierName"]??""}", style: fontSize9),
+                                                Expanded(child: Text("${filteredList["SupplierName"]??""}", style: fontSize9),),
                                                 // Expanded(child: Text("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",))
                                               ]
                                           ),
@@ -288,7 +289,7 @@ Future<Uint8List> inwardPdfGen2(Map filteredList) async {
                                                     children: [
                                                       Container(width: textWidth,child: Text("Remarks", style: fontSize9),),
                                                       SizedBox(width: 5,child: Text(":")),
-                                                      Text("${filteredList["Remarks"]??""}", style: fontSize9),
+                                                      Expanded(child: Text("${filteredList["Remarks"]??""}", style: fontSize9),)
                                                     ]
                                                 ),
                                                 SizedBox(height: 20),

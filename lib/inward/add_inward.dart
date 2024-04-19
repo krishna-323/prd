@@ -177,13 +177,17 @@ class _AddInwardState extends State<AddInward> {
     return 'PT${time.hour}H${time.minute}M00S';
   }
   String? userName;
+  String? plant;
   Future<void> getLoginData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       userName = prefs.getString('userName');
+      plant = prefs.getString('plant');
     });
   }
-
+  void initializeData() async {
+    await getLoginData(); // Wait for getLoginData to complete
+  }
   @override
   void initState() {
     // TODO: implement initState
@@ -202,7 +206,7 @@ class _AddInwardState extends State<AddInward> {
     getInitialData();
     canceledController.text = canceledValue1;
     plantController.text = widget.plantValue;
-    getLoginData();
+    initializeData();
   }
 
   Future getInitialData() async{
@@ -339,8 +343,8 @@ class _AddInwardState extends State<AddInward> {
                                 "ReceivedBy1": referenceNoController.text,
                                 "CreatedBy": userName,
                               };
-                              print('--------- add inward --------');
-                              print(savedInward);
+                              // print('--------- add inward --------');
+                              // print(savedInward);
                               postInwardApi(savedInward, context);
                             },
                             child: const Text("Save", style: TextStyle(color: Colors.white)),
@@ -1097,10 +1101,12 @@ class _AddInwardState extends State<AddInward> {
 
 
   Future<List<dynamic>?> getPOData(String supplierCode) async {
-    String url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA')  or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC')) and _PurchaseOrder/Supplier eq '$supplierCode' and _PurchaseOrderItem/Plant eq '${plantController.text}'&select=PurchaseOrder&expand=_PurchaseOrder,_PurchaseOrderItem";
-    String url2 = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA')  or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC')) and _PurchaseOrder/Supplier eq '$supplierCode'&select=PurchaseOrderItem&expand=_PurchaseOrder,_PurchaseOrderItem";
-    print('------- po url --------');
-    print(url);
+    // String url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA')  or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC')) and _PurchaseOrder/Supplier eq '$supplierCode' and _PurchaseOrderItem/Plant eq '${plantController.text}'&select=PurchaseOrder&expand=_PurchaseOrder,_PurchaseOrderItem";
+    // String url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA')  or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC')) and _PurchaseOrder/Supplier eq '$supplierCode'&select=PurchaseOrder&expand=_PurchaseOrder,_PurchaseOrderItem";
+    String url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?select=PurchaseOrder&expand=_PurchaseOrder,_PurchaseOrderItem&filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'TO')) and _PurchaseOrder/Supplier eq '$supplierCode'&top=5000";
+    // String url2 = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA')  or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC')) and _PurchaseOrder/Supplier eq '$supplierCode'&select=PurchaseOrderItem&expand=_PurchaseOrder,_PurchaseOrderItem";
+print('------ po url ------');
+print(url);
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -1155,8 +1161,7 @@ class _AddInwardState extends State<AddInward> {
   Future getGateInNo() async {
     String url =
         "${StaticData.apiURL}/YY1_GATEENTRY_CDS/YY1_GATEENTRY?orderby=GateInwardNo desc&filter=Plant eq '${widget.plantValue}'";
-    print('---- gate in url ---------');
-    print(url);
+
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -1165,20 +1170,26 @@ class _AddInwardState extends State<AddInward> {
       if (response.statusCode == 200) {
         Map tempData = json.decode(response.body);
         List results = tempData['d']['results'];
-        print('-------- gate in no  response---------');
-        print(results);
+
         int nextGateInwardNo = 1;
         if (results.isNotEmpty) {
           String firstGateInwardNo = results[0]['GateInwardNo'];
           nextGateInwardNo = int.parse(firstGateInwardNo) + 1;
         } else {
-          // Logic to set the starting gateInwardNo based on plantValue
           if (widget.plantValue == '1101') {
             nextGateInwardNo = 1000000001;
           } else if (widget.plantValue == '1102') {
             nextGateInwardNo = 2000000001;
           } else if (widget.plantValue == '1103') {
             nextGateInwardNo = 3000000001;
+          } else if (widget.plantValue == '1104') {
+            nextGateInwardNo = 4000000001;
+          }else if (widget.plantValue == '1105') {
+            nextGateInwardNo = 5000000001;
+          }else if (widget.plantValue == '1106') {
+            nextGateInwardNo = 6000000001;
+          }else if (widget.plantValue == '1107') {
+            nextGateInwardNo = 7000000001;
           }
         }
         gateInwardNoController.text = nextGateInwardNo.toString();

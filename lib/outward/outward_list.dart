@@ -1,10 +1,12 @@
 import 'dart:convert';
-
+import 'dart:typed_data';
+import 'dart:html' as html;
 import 'package:adaptive_scrollbar/adaptive_scrollbar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import '../home/home_screen.dart';
+import '../pdf_inward/outward_pdf_generator.dart';
 import '../utils/config.dart';
 import '../utils/custom_appbar.dart';
 import '../utils/custom_drawer.dart';
@@ -74,8 +76,6 @@ class _OutwardListState extends State<OutwardList> {
   }
   Future getOutwardListApi()async{
     String url = "${StaticData.apiURL}/YY1_GATEENTRYOUT_CDS/YY1_GATEENTRYOUT?filter=Plant eq '${widget.plantValue}'&orderby=GateOutwardNo desc";
-    print('----- get out list url ---------');
-    print(url);
     try{
       final response = await http.get(
         Uri.parse(url),
@@ -111,8 +111,6 @@ class _OutwardListState extends State<OutwardList> {
           setState(() {
             outwardList.add(outWardData);
             loading = false;
-            print('------- outward data ------');
-            print(outwardList);
           });
         }
         if (outwardList.isEmpty) {
@@ -142,30 +140,30 @@ class _OutwardListState extends State<OutwardList> {
       return '';
     }
   }
-  // Future downloadJmiPdf(Map filteredList)async{
-  //
-  //   final Uint8List pdfBytes = await outwardPdfGen(filteredList);
-  //
-  //   // Create a blob from the PDF bytes
-  //   final blob = html.Blob([pdfBytes]);
-  //
-  //   final url = html.Url.createObjectUrlFromBlob(blob);
-  //
-  //   // Create a download link
-  //   final anchor = html.AnchorElement(href: url)
-  //     ..setAttribute("download", "${filteredList['GateInwardNo']??""} .pdf")
-  //     ..text = "Download PDF";
-  //
-  //   // Append the anchor element to the body
-  //   html.document.body?.append(anchor);
-  //
-  //   // Click the anchor to initiate download.
-  //   anchor.click();
-  //
-  //   // Clean up resources
-  //   html.Url.revokeObjectUrl(url);
-  //   anchor.remove();
-  // }
+  Future downloadJmiPdf(Map filteredList)async{
+
+    final Uint8List pdfBytes = await outwardPdfGen(filteredList);
+
+    // Create a blob from the PDF bytes
+    final blob = html.Blob([pdfBytes]);
+
+    final url = html.Url.createObjectUrlFromBlob(blob);
+
+    // Create a download link
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute("download", "${filteredList['GateOutwardNo']??""} .pdf")
+      ..text = "Download PDF";
+
+    // Append the anchor element to the body
+    html.document.body?.append(anchor);
+
+    // Click the anchor to initiate download.
+    anchor.click();
+
+    // Clean up resources
+    html.Url.revokeObjectUrl(url);
+    anchor.remove();
+  }
   @override
   void initState() {
     // TODO: implement initState
@@ -496,7 +494,7 @@ class _OutwardListState extends State<OutwardList> {
                                                 child: SizedBox(
                                                   height: 25,
                                                   // width: 150,
-                                                  child: Center(child: Text("Supplier Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 12))),
+                                                  child: Center(child: Text("Customer Name",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 12))),
                                                 ),
                                               ),
                                             ),
@@ -633,7 +631,7 @@ class _OutwardListState extends State<OutwardList> {
                                                             child: Center(
                                                               child: InkWell(
                                                                 onTap: () {
-                                                                  // downloadJmiPdf(filteredList[i]);
+                                                                  downloadJmiPdf(filteredList[i]);
                                                                 },
                                                                 child: const Icon(Icons.download,size: 16,color: Colors.blue),
                                                               ),
@@ -965,9 +963,6 @@ class _OutwardListState extends State<OutwardList> {
     String formattedDate = DateFormat("dd-MM-yyyy").format(pickedDate);
     searchEntryDate.text = formattedDate;
     fetchEntryDate(pickedDate);
-    print('------ selectEntryDate -------');
-    print(formattedDate);
-    print(pickedDate);
   }
   TimeOfDay _time = TimeOfDay.now();
   TimeOfDay _time2 = TimeOfDay.now();
