@@ -45,6 +45,7 @@ class _AddInwardState extends State<AddInward> {
   final invoiceNoController = TextEditingController();
   final referenceNoController = TextEditingController();
   final supplierNameController = TextEditingController();
+  final supplierPlantController = TextEditingController();
   final invoiceDateController = TextEditingController();
   final purchaseOrderController = TextEditingController();
   final poTypeController = TextEditingController();
@@ -55,17 +56,24 @@ class _AddInwardState extends State<AddInward> {
   final remarksController = TextEditingController();
   final searchSupplierCodeController = TextEditingController();
   final searchSupplierNameController = TextEditingController();
+  final searchSupplierPlantController = TextEditingController();
   final searchPONoController = TextEditingController();
   final searchSecurityNameController = TextEditingController();
   late double drawerWidth;
-
+  String supplierCode = '';
+  String plantCode = '';
+  bool isActiveSupplierName = false;
+  bool isActiveSupplierCode = false;
+  bool isActiveSupplierPlant = false;
   String dropdownValue1 = "";
   String canceledValue1 = "NO";
   String typeValue1 = "-";
   List supplierCodeList = [];
   List securityNameList = [];
+  List plantList = [];
   List<dynamic> poNoList = [];
   List suppliers = [];
+  List plants = [];
   List poNo = [];
   List<dynamic> selectedPurchaseOrders = [];
   List<dynamic> displayData =[];
@@ -212,6 +220,7 @@ class _AddInwardState extends State<AddInward> {
   Future getInitialData() async{
     var data = await getSupplierCode();
     var data2 = await getSecurityNameApi();
+    var data3 = await getPlantList();
     if(data != null){
       suppliers = data.map((entry){
         return {
@@ -227,8 +236,16 @@ class _AddInwardState extends State<AddInward> {
         };
       }).toList();
     }
+    if(data3 != null){
+      plants = data3.map((entry){
+        return {
+          "Plant" : entry['Plant']
+        };
+      }).toList();
+    }
     supplierCodeList = suppliers;
     securityNameList = securityName;
+    plantList = plants;
     setState(() {
       loading = false;
     });
@@ -277,8 +294,8 @@ class _AddInwardState extends State<AddInward> {
                                   return;
                                 }
                               } else {
-                                if (supplierNameController.text.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Select Supplier Name")));
+                                if (supplierPlantController.text.isEmpty && supplierNameController.text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Select Supplier Plant or Supplier Name")));
                                   return;
                                 }
                                 if (purchaseOrderController.text.isEmpty || purchaseOrderController.text == "-") {
@@ -587,8 +604,8 @@ class _AddInwardState extends State<AddInward> {
                                                               ),
                                                               contentPadding: EdgeInsets.fromLTRB(12, 00, 0, 0),
                                                               suffixIcon: Icon(
-                                                                Icons.arrow_drop_down_outlined,
-                                                                color: Colors.blue,size: 16,
+                                                                Icons.arrow_drop_down_circle_sharp,
+                                                                color: Colors.blue,size: 14,
                                                               ),
                                                               enabledBorder:OutlineInputBorder(borderSide: BorderSide(color: mTextFieldBorder)),
                                                               focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
@@ -596,7 +613,7 @@ class _AddInwardState extends State<AddInward> {
                                                             onChanged: (value){
 
                                                             },
-                                                            onTap: () {
+                                                            onTap: isActiveSupplierCode ? null : () {
                                                               showDialog(
                                                                 context: context,
                                                                 builder: (context) => _showSupplierNameDialog(),
@@ -609,8 +626,13 @@ class _AddInwardState extends State<AddInward> {
                                                                   purchaseOrders = [];
                                                                   purchaseOrderController.clear();
                                                                   poTypeController.clear();
+                                                                  plantCode = '';
+                                                                  supplierCode = value["code"];
                                                                 });
-                                                                getPOData(value["code"]);
+                                                                getPoData();
+                                                              });
+                                                              setState(() {
+                                                                isActiveSupplierPlant = true;
                                                               });
                                                             },
                                                           ),
@@ -644,13 +666,13 @@ class _AddInwardState extends State<AddInward> {
                                                               ),
                                                               contentPadding: EdgeInsets.fromLTRB(12, 00, 0, 0),
                                                               suffixIcon: Icon(
-                                                                Icons.arrow_drop_down_outlined,
-                                                                color: Colors.blue,size: 16,
+                                                                Icons.arrow_drop_down_circle_sharp,
+                                                                color: Colors.blue,size: 14,
                                                               ),
                                                               enabledBorder:OutlineInputBorder(borderSide: BorderSide(color: mTextFieldBorder)),
                                                               focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                                                             ),
-                                                            onTap: () {
+                                                            onTap: isActiveSupplierCode ? null :() {
                                                               showDialog(
                                                                 context: context,
                                                                 builder: (context) => _showSupplierDialog(),
@@ -662,8 +684,80 @@ class _AddInwardState extends State<AddInward> {
                                                                   purchaseOrders = [];
                                                                   purchaseOrderController.clear();
                                                                   poTypeController.clear();
+                                                                  plantCode = '';
+                                                                  supplierCode = value;
                                                                 });
-                                                                getPOData(value);
+                                                                // getPOData(value);
+                                                                getPoData();
+                                                              });
+                                                              setState(() {
+                                                                isActiveSupplierPlant = true;
+                                                              });
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: const EdgeInsets.all(8),
+                                                  child: Row(
+                                                    children: [
+                                                      const SizedBox(
+                                                          width: 100,
+                                                          child: Text("Supplier Plant",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 12))
+                                                      ),
+                                                      SizedBox(
+                                                        height: 30,
+                                                        width: 200,
+                                                        child: SizedBox(
+                                                          height: 30,
+                                                          child: TextFormField(
+                                                            style: const TextStyle(fontSize: 11),
+                                                            readOnly: true,
+                                                            autofocus: true,
+                                                            controller: supplierPlantController,
+                                                            decoration:  const InputDecoration(
+                                                              hintText: " Select Supplier Plant",
+                                                              hintStyle: TextStyle(fontSize: 11,),
+                                                              border: OutlineInputBorder(
+                                                                  borderSide: BorderSide(color:  Colors.blue)
+                                                              ),
+                                                              contentPadding: EdgeInsets.fromLTRB(12, 00, 0, 0),
+                                                              suffixIcon: Icon(
+                                                                Icons.arrow_drop_down_circle_sharp,
+                                                                color: Colors.blue,size: 14,
+                                                              ),
+                                                              enabledBorder:OutlineInputBorder(borderSide: BorderSide(color: mTextFieldBorder)),
+                                                              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
+                                                            ),
+                                                            onChanged: (value){
+
+                                                            },
+                                                            onTap: isActiveSupplierPlant ? null : () {
+                                                              showDialog(
+                                                                context: context,
+                                                                builder: (context) => _showSupplierPlantDialog(),
+                                                              ).then((value) {
+                                                                setState(() {
+                                                                  loading = false;
+                                                                  supplierPlantController.text = value;
+                                                                  plantCode = value;
+                                                                  poNoList=[];
+                                                                  purchaseOrders = [];
+                                                                  purchaseOrderController.clear();
+                                                                  poTypeController.clear();
+                                                                  supplierCode = '';
+                                                                  print('------ plant code plant drop down ---------');
+                                                                  print(plantCode.toString());
+                                                                  print(value);
+                                                                });
+                                                                getPoData();
+                                                              });
+                                                              setState(() {
+                                                                isActiveSupplierName = true;
+                                                                isActiveSupplierCode = true;
                                                               });
                                                             },
                                                           ),
@@ -697,8 +791,8 @@ class _AddInwardState extends State<AddInward> {
                                                               ),
                                                               contentPadding: EdgeInsets.fromLTRB(12, 00, 0, 0),
                                                               suffixIcon: Icon(
-                                                                Icons.arrow_drop_down_outlined,
-                                                                color: Colors.blue,size: 16,
+                                                                Icons.arrow_drop_down_circle_sharp,
+                                                                color: Colors.blue,size: 14,
                                                               ),
                                                               enabledBorder:OutlineInputBorder(borderSide: BorderSide(color: mTextFieldBorder)),
                                                               focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
@@ -1099,22 +1193,71 @@ class _AddInwardState extends State<AddInward> {
     }
   }
 
+  Future getPlantList() async{
+    String url = "${StaticData.apiURL}/YY1_PLANT_LIST_CDS/YY1_Plant_List?orderby=Plant";
 
-  Future<List<dynamic>?> getPOData(String supplierCode) async {
-    // String url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA')  or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC')) and _PurchaseOrder/Supplier eq '$supplierCode' and _PurchaseOrderItem/Plant eq '${plantController.text}'&select=PurchaseOrder&expand=_PurchaseOrder,_PurchaseOrderItem";
-    // String url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA')  or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC')) and _PurchaseOrder/Supplier eq '$supplierCode'&select=PurchaseOrder&expand=_PurchaseOrder,_PurchaseOrderItem";
-    String url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?select=PurchaseOrder&expand=_PurchaseOrder,_PurchaseOrderItem&filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'TO')) and _PurchaseOrder/Supplier eq '$supplierCode'&top=5000";
-    // String url2 = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderScheduleLine?filter=((OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'AU') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'EA')  or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'H') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'KG') or (OpenPurchaseOrderQuantity gt 0 and PurchaseOrderQuantityUnit eq 'PC')) and _PurchaseOrder/Supplier eq '$supplierCode'&select=PurchaseOrderItem&expand=_PurchaseOrder,_PurchaseOrderItem";
-print('------ po url ------');
-print(url);
-    try {
+    try{
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': StaticData.basicAuth,
+        },
+      );
+      if(response.statusCode == 200){
+        Map tempData ={};
+        tempData= json.decode(response.body);
+        if(tempData['d']['results'].isEmpty){
+          if(mounted){
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No Data Found !')));
+          }
+          setState(() {
+            loading = false;
+          });
+          return [];
+        }else{
+          setState(() {
+            displayData = tempData['d']['results'];
+            loading = false;
+          });
+        }
+        return json.decode(response.body)['d']['results'];
+      }else {
+        print('Request failed with status: ${response.statusCode}');
+        setState(() {
+          loading = false;
+        });
+        return null;
+      }
+    }catch(e){
+      print('Error occurred in API: $e');
+      setState(() {
+        loading = false;
+      });
+      return null;
+    }
+  }
+
+  Future getPoData() async{
+    String url = "";
+    if(supplierCode.isNotEmpty || supplierCode != ""){
+      url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderItem?expand=_PurchaseOrder,_PurchaseOrderScheduleLineTP&filter=_PurchaseOrder/Supplier eq '$supplierCode' and _PurchaseOrder/SupplyingPlant eq ''  and IsCompletelyDelivered eq false&top=5000";
+    }
+
+    if(plantCode.isNotEmpty || plantCode != ""){
+      url = "${StaticData.apiURL}/PurchaseOrder/PurchaseOrderItem?expand=_PurchaseOrder,_PurchaseOrderScheduleLineTP&filter=_PurchaseOrder/Supplier eq '' and _PurchaseOrder/SupplyingPlant eq '$plantCode'  and IsCompletelyDelivered eq false&top=5000";
+    }
+
+    print('-------- po url -------');
+    print(url);
+
+    try{
       final response = await http.get(
         Uri.parse(url),
         headers: {'Authorization': StaticData.basicAuth},
       );
-      if (response.statusCode == 200) {
+      if(response.statusCode == 200){
         Map<String, dynamic>? tempData = json.decode(response.body);
-        if (tempData!['value'].isEmpty || tempData['value'] == null) {
+        if(tempData!['value'].isEmpty){
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No PO Number !')));
           }
@@ -1125,34 +1268,40 @@ print(url);
             poNoList = [];
             loading = false;
           });
-        } else if (tempData != null &&
-            tempData.containsKey('value') &&
-            tempData['value'] != null) {
+        }else{
           setState(() {
             loading = false;
           });
           purchaseOrders = tempData['value'];
-          poNoList = purchaseOrders.map((order) => order['_PurchaseOrderItem']['PurchaseOrder']).toSet().toList();
+          poNoList = purchaseOrders.map((order) => order['PurchaseOrder']).toSet().toList();
           return purchaseOrders;
-        } else {
-          setState(() {
-            loading = false;
-          });
-          print('Error: Unable to find results in response body');
-          return null;
         }
-      } else {
-        setState(() {
-          loading = false;
-        });
-        print('Request failed with status: ${response.statusCode}');
-        return null;
+        // if(tempData != null && tempData.containsKey('value')){
+        //   setState(() {
+        //     loading = false;
+        //   });
+        //   purchaseOrders = tempData['value'];
+        //   poNoList = purchaseOrders.map((order) => order['PurchaseOrder']).toSet().toList();
+        //   return purchaseOrders;
+        // }else if(tempData!.isEmpty){
+        //   print('-------- empty po -------');
+        //   if (mounted) {
+        //     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No PO Number !')));
+        //   }
+        //   setState(() {
+        //     purchaseOrderController.clear();
+        //     poTypeController.clear();
+        //     purchaseOrders = [];
+        //     poNoList = [];
+        //     loading = false;
+        //   });
+        // }
       }
-    } catch (e) {
+    }catch(e){
+      print('Error occurred in API: $e');
       setState(() {
         loading = false;
       });
-      print('Error occurred in API: $e');
       return null;
     }
   }
@@ -1523,8 +1672,66 @@ print(url);
     );
   }
 
+  _showSupplierPlantDialog(){
+    return AlertDialog(
+      title: const Text("Select Supplier Plant"),
+      content: StatefulBuilder(
+        builder: (context, setState) {
+          return SizedBox(
+            height: 500,
+            child: Column(
+              children: [
+                Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: searchSupplierPlantController,
+                        decoration: const InputDecoration(labelText: "Search Supplier Plant"),
+                        onChanged: (value) {
+                          setState((){
+                            if(value.isEmpty || value == ""){
+                              plantList = [];
+                            }
+                            filterPlantList(value);
+                          });
+                        },
+                      ),
+                    )
+                ),
+                SizedBox(
+                  width: 500,
+                  height: 400,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: plantList.length,
+                    itemBuilder: (context, index) {
+                      return InkWell(
+                        onTap: () {
+                          Navigator.pop(
+                              context,
+                              plantList[index]["Plant"]
+                          );
+                          setState((){
+                            supplierPlantController.text = plantList[index]["Plant"];
+                          });
+
+                        },
+                        child: ListTile(
+                          title: Text(plantList[index]["Plant"].toString()),
+                        ),
+                      );
+                    },),
+                ),
+              ],
+            ),
+          );
+        },),
+    );
+  }
+
   _showPODialog(){
     return AlertDialog(
+      backgroundColor: Colors.white,
       title: const Text("Select Purchase Order No"),
       content: StatefulBuilder(
         builder: (context, setState) {
@@ -1558,18 +1765,18 @@ print(url);
                     itemBuilder: (context, index) {
                       var purchaseOrder = poNoList[index];
                       var purchaseOrderType = getPurchaseOrderType(purchaseOrder);
-                      var items = purchaseOrders.where((order) => order['_PurchaseOrderItem']['PurchaseOrder'] == purchaseOrder).toList();
+                      var items = purchaseOrders.where((order) => order['_PurchaseOrder']['PurchaseOrder'] == purchaseOrder).toList();
                       var widgets = <Widget>[];
 
-                      for (var item in items) {
-                        var purchaseOrderItem = item['_PurchaseOrderItem'];
-                        var itemCode = purchaseOrderItem['Material'];
-                        var itemName = purchaseOrderItem['PurchaseOrderItemText'];
-                        var itemQty = purchaseOrderItem['OrderQuantity'];
-                        var itemUom = purchaseOrderItem['PurchaseOrderQuantityUnit'];
-                        var itemPrice = purchaseOrderItem['NetPriceAmount'];
-                        var itemGrossAmt = purchaseOrderItem['GrossAmount'];
-                        var poLineId = purchaseOrderItem['PurchaseOrderItem'];
+                      for(var item in items){
+                        var purchaseOrderItem = item['PurchaseOrder'];
+                        var itemCode = item['Material'];
+                        var itemName = item['PurchaseOrderItemText'];
+                        var itemQty = item['OrderQuantity'];
+                        var itemUom = item['PurchaseOrderQuantityUnit'];
+                        var itemPrice = item['NetPriceAmount'];
+                        var itemGrossAmt = item['GrossAmount'];
+                        var poLineId = item['PurchaseOrderItem'];
                         widgets.add(
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1579,30 +1786,37 @@ print(url);
                                   width: 100,
                                   child: Center(child: Text(poLineId.toString()))
                               ),
+                              Container(width: 1,height: 22,color: Colors.grey),
                               SizedBox(
                                   width: 100,
                                   child: Center(child: Text(widget.plantValue))
                               ),
+                              Container(width: 1,height: 22,color: Colors.grey),
                               SizedBox(
                                   width: 100,
                                   child: Center(child: Text(itemCode))
                               ),
+                              Container(width: 1,height: 22,color: Colors.grey),
                               SizedBox(
                                   width: 400,
                                   child: Center(child: Text(itemName))
                               ),
+                              Container(width: 1,height: 22,color: Colors.grey),
                               SizedBox(
                                   width: 100,
                                   child: Center(child: Text(itemUom))
                               ),
+                              Container(width: 1,height: 22,color: Colors.grey),
                               SizedBox(
                                   width: 100,
                                   child: Center(child: Text(itemQty.toString()))
                               ),
+                              Container(width: 1,height: 22,color: Colors.grey),
                               SizedBox(
                                   width: 100,
                                   child: Center(child: Text(itemPrice.toString()))
                               ),
+                              Container(width: 1,height: 22,color: Colors.grey),
                               SizedBox(
                                   width: 100,
                                   child: Center(child: Text(itemGrossAmt.toString()))
@@ -1618,51 +1832,67 @@ print(url);
                         },
                         child: ListTile(
                           title: Text(purchaseOrder),
-                          subtitle: Column(
-                            children: [
-                              const Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  SizedBox(
-                                      width: 100,
-                                      child: Center(child: Text("Line No",style: TextStyle(fontWeight: FontWeight.bold),))
-                                  ),
-                                  SizedBox(
-                                      width: 100,
-                                      child: Center(child: Text("Plant",style: TextStyle(fontWeight: FontWeight.bold),))
-                                  ),
-                                  SizedBox(
-                                      width: 100,
-                                      child: Center(child: Text("Item Code",style: TextStyle(fontWeight: FontWeight.bold),))
-                                  ),
-                                  SizedBox(
-                                      width: 400,
-                                      child: Center(child: Text("Item Name",style: TextStyle(fontWeight: FontWeight.bold),))
-                                  ),
-                                  SizedBox(
-                                      width: 100,
-                                      child: Center(child: Text("UOM",style: TextStyle(fontWeight: FontWeight.bold),))
-                                  ),
-                                  SizedBox(
-                                      width: 100,
-                                      child: Center(child: Text("Qty",style: TextStyle(fontWeight: FontWeight.bold),))
-                                  ),
-                                  SizedBox(
-                                      width: 100,
-                                      child: Center(child: Text("Price",style: TextStyle(fontWeight: FontWeight.bold),))
-                                  ),
-                                  SizedBox(
-                                      width: 100,
-                                      child: Center(child: Text("Value",style: TextStyle(fontWeight: FontWeight.bold),))
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: widgets,
-                              ),
-                            ],
+                          subtitle: Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.grey,
+                                ),
+                                borderRadius: BorderRadius.circular(4)
+                            ),
+                            child: Column(
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const SizedBox(
+                                        width: 100,
+                                        child: Center(child: Text("Line No",style: TextStyle(fontWeight: FontWeight.bold),))
+                                    ),
+                                    Container(width: 1,height: 22,color: Colors.grey),
+                                    const SizedBox(
+                                        width: 100,
+                                        child: Center(child: Text("Plant",style: TextStyle(fontWeight: FontWeight.bold),))
+                                    ),
+                                    Container(width: 1,height: 22,color: Colors.grey),
+                                    const SizedBox(
+                                        width: 100,
+                                        child: Center(child: Text("Item Code",style: TextStyle(fontWeight: FontWeight.bold),))
+                                    ),
+                                    Container(width: 1,height: 22,color: Colors.grey),
+                                    const SizedBox(
+                                        width: 400,
+                                        child: Center(child: Text("Item Name",style: TextStyle(fontWeight: FontWeight.bold),))
+                                    ),
+                                    Container(width: 1,height: 22,color: Colors.grey),
+                                    const SizedBox(
+                                        width: 100,
+                                        child: Center(child: Text("UOM",style: TextStyle(fontWeight: FontWeight.bold),))
+                                    ),
+                                    Container(width: 1,height: 22,color: Colors.grey),
+                                    const SizedBox(
+                                        width: 100,
+                                        child: Center(child: Text("Qty",style: TextStyle(fontWeight: FontWeight.bold),))
+                                    ),
+                                    Container(width: 1,height: 22,color: Colors.grey),
+                                    const SizedBox(
+                                        width: 100,
+                                        child: Center(child: Text("Price",style: TextStyle(fontWeight: FontWeight.bold),))
+                                    ),
+                                    Container(width: 1,height: 22,color: Colors.grey),
+                                    const SizedBox(
+                                        width: 100,
+                                        child: Center(child: Text("Value",style: TextStyle(fontWeight: FontWeight.bold),))
+                                    ),
+                                  ],
+                                ),
+                                const Divider(color: Colors.grey,height: 2),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: widgets,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -1751,11 +1981,11 @@ print(url);
 
   filterPONo(String searchQuery) {
     if (searchQuery.isEmpty) {
-      poNoList = purchaseOrders.map((order) => order['_PurchaseOrderItem']['PurchaseOrder']).toSet().toList();
+      poNoList = purchaseOrders.map((order) => order['PurchaseOrder']).toSet().toList();
     } else {
       poNoList = purchaseOrders
-          .where((order) => order['_PurchaseOrderItem']['PurchaseOrder'].contains(searchQuery))
-          .map((order) => order['_PurchaseOrderItem']['PurchaseOrder']).toSet()
+          .where((order) => order['PurchaseOrder'].contains(searchQuery))
+          .map((order) => order['PurchaseOrder']).toSet()
           .toList();
     }
   }
@@ -1765,6 +1995,15 @@ print(url);
       securityNameList = securityName.where((element) {
         final secName = element['SecurityName'].toString().toLowerCase();
         return secName.contains(value.toLowerCase());
+      }).toList();
+    });
+  }
+
+  void filterPlantList(String value){
+    setState(() {
+      plantList = plants.where((element) {
+        final plantValue = element['Plant'].toString().toLowerCase();
+        return plantValue.contains(value.toLowerCase());
       }).toList();
     });
   }

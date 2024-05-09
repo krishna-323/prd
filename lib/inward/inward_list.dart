@@ -44,7 +44,7 @@ class _InwardListState extends State<InwardList> {
   final searchCancel = TextEditingController();
 
 
-  bool loading = false;
+  bool loading = true;
   List inwardList = [];
   List filteredList = [];
   int startVal=0;

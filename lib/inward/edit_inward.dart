@@ -188,10 +188,10 @@ class _EditInwardState extends State<EditInward> {
     // TODO: implement initState
     drawerWidth = 60.0;
     super.initState();
-    print('-------- edit inward init ---------');
+    // print('-------- edit inward init ---------');
     sapUuid = widget.inwardMap['SAP_UUID'];
-    print(sapUuid);
-    print(widget.inwardMap);
+    // print(sapUuid);
+    // print(widget.inwardMap);
     String entryDate = DateFormat("yyyy-MM-dd").format(DateTime.now());
     entryDateTime = "${entryDate}T00:00:00";
     gateInwardNoController.text = widget.inwardMap['GateInwardNo']??"";
@@ -543,10 +543,10 @@ class _EditInwardState extends State<EditInward> {
                                                                     borderSide: BorderSide(color:  Colors.blue)
                                                                 ),
                                                                 contentPadding: EdgeInsets.fromLTRB(12, 00, 0, 0),
-                                                                suffixIcon: Icon(
-                                                                  Icons.arrow_drop_down_outlined,
-                                                                  color: Colors.blue,size: 16,
-                                                                ),
+                                                                  suffixIcon: Icon(
+                                                                    Icons.arrow_drop_down_circle_sharp,
+                                                                    color: Colors.blue,size: 14,
+                                                                  ),
                                                                 enabledBorder:OutlineInputBorder(borderSide: BorderSide(color: mTextFieldBorder)),
                                                                 focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                                                               ),
@@ -600,10 +600,10 @@ class _EditInwardState extends State<EditInward> {
                                                                     borderSide: BorderSide(color:  Colors.blue)
                                                                 ),
                                                                 contentPadding: EdgeInsets.fromLTRB(12, 00, 0, 0),
-                                                                suffixIcon: Icon(
-                                                                  Icons.arrow_drop_down_outlined,
-                                                                  color: Colors.blue,size: 16,
-                                                                ),
+                                                                  suffixIcon: Icon(
+                                                                    Icons.arrow_drop_down_circle_sharp,
+                                                                    color: Colors.blue,size: 14,
+                                                                  ),
                                                                 enabledBorder:OutlineInputBorder(borderSide: BorderSide(color: mTextFieldBorder)),
                                                                 focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                                                               ),
@@ -650,8 +650,8 @@ class _EditInwardState extends State<EditInward> {
                                                                 ),
                                                                 contentPadding: EdgeInsets.fromLTRB(12, 00, 0, 0),
                                                                 suffixIcon: Icon(
-                                                                  Icons.arrow_drop_down_outlined,
-                                                                  color: Colors.blue,size: 16,
+                                                                  Icons.arrow_drop_down_circle_sharp,
+                                                                  color: Colors.blue,size: 14,
                                                                 ),
                                                                 enabledBorder:OutlineInputBorder(borderSide: BorderSide(color: mTextFieldBorder)),
                                                                 focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
