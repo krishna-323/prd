@@ -39,6 +39,9 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
       else if(responseData2[0]['GoodsMovementType']=='Z41'){
         pdfBytes=  await generatePdfDeliveryZ41(responseData1,responseData2);
       }
+      else if(responseData2[0]['GoodsMovementType']=='303'){
+        pdfBytes=  await generatePdfDelivery303(responseData1,responseData2);
+      }
 
 
       // print('-----Uint8List-----');
@@ -166,7 +169,55 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
       });
     }
     catch(e){
-      print('------Exception--541----');
+      print('------Exception--161----');
+      print(e);
+    }
+  }
+
+  //Goods Movement Type 303.
+  Future fetchData303(String dcNumber, List<dynamic> responseGoodsMovementType)async{
+    String url1new ="${StaticData.apiURL}/YY1_GOODS_MOVEMENT_303_CDS/YY1_Goods_movement_303?filter=MaterialDocument eq '$dcNumber' and IsAutomaticallyCreated eq  ''";
+
+
+    final res161= await http.get(Uri.parse(url1new),
+      headers: {
+        'Authorization': StaticData.basicAuth,
+      },
+    );
+    final response = jsonDecode(res161.body);
+    try{
+      setState(() {
+        if(res161.statusCode==200){
+          responseData2 =response['d']['results'];
+
+          if(responseData2.isEmpty){
+            if(mounted){
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No Data available Please Check !!!..'),
+                duration: Duration(seconds: 8),));
+            }
+          }
+          else{
+            downloadDeliveryPdf(responseData2,responseGoodsMovementType);
+          }
+        }
+        else if(res161.statusCode == 400){
+          if(mounted){
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No Data Available,Please Check DC Number.'),
+              duration: Duration(seconds: 8),));
+          }
+        }
+        else {
+          if(mounted){
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Something Went Wrong Please Check !!!..'),
+              duration: Duration(seconds: 8),));
+          }
+        }
+
+        loading=false;
+      });
+    }
+    catch(e){
+      print('------Exception--303----');
       print(e);
     }
   }
@@ -201,9 +252,12 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
           else if(responseGoodsMovementType[0]['GoodsMovementType']=='161'){
             print('--------GoodsMovementType------');
             print(responseGoodsMovementType[0]['GoodsMovementType']);
-
             fetchData161(dcNumber,responseGoodsMovementType);
-
+          }
+          else if(responseGoodsMovementType[0]['GoodsMovementType']=='303'){
+            print('--------GoodsMovementType------');
+            print(responseGoodsMovementType[0]['GoodsMovementType']);
+            fetchData303(dcNumber,responseGoodsMovementType);
           }
           else{
             if(mounted){
@@ -276,32 +330,22 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
                     onPressed: (){
 
                       if(_validate.currentState!.validate()){
-                        ///Old Code.
-                        // getPurchaseOrders1(dcNumberController.text).whenComplete(() {
-                        //   getPurchaseOrders2(dcNumberController.text).whenComplete(() {
-                        //     if(responseData1.isEmpty || responseData2.isEmpty){
-                        //       if(mounted){
-                        //         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No Data Available,Please Check DC Number.'),
-                        //           duration: Duration(seconds: 8),));
-                        //       }
-                        //     }
-                        //     else if(responseData2[0]['GoodsMovementType']=='161' || responseData2[0]['GoodsMovementType']=='541'){
-                        //       return  downloadDeliveryPdf(responseData1,responseData2);
-                        //     }
-                        //     else{
-                        //       if(mounted){
-                        //         ScaffoldMessenger.of(context).showSnackBar(const
-                        //         SnackBar(content: Text('This Is Not 161 (OR) 541 Movement Type Please Check.'),
-                        //           duration: Duration(seconds: 10),));
-                        //       }
-                        //     }
-                        //   });
-                        // });
-
+                        setState(() {
+                          loading =true;
+                        });
                         getGoodsMovementType(dcNumberController.text);
                       }
 
-                    })
+                    }),
+                const SizedBox(width: 20,),
+                loading? const Row(children: [
+                  SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator()),
+                  SizedBox(width: 5,),
+                  Text("Loading Please Wait.."),
+                ],):const Text(""),
               ],
             ),
           ]),
