@@ -64,7 +64,20 @@ Future<Uint8List> generatePdfDeliveryNote161(List<dynamic> responseData1, List<d
     }
     return formattedNumber;
   }
-
+  String gstNumber='';
+  ///GST Number.
+  try{
+    if(responseData1[0]['Plant']=="1101" || responseData1[0]['Plant']=="1102" || responseData1[0]['Plant']=="1103" || responseData1[0]['Plant']=="1104"
+        || responseData1[0]['Plant']=="1105" || responseData1[0]['Plant']=="1107"){
+      gstNumber = "33AACCJ0197Q1Z7";
+    }
+    else if(responseData1[0]['Plant']=="1106"){
+      gstNumber ="03AACCJ0197Q1ZA";
+    }
+  }
+  catch(e){
+    print('--------Exception Plant------');
+  }
 
   pdf.addPage(
     MultiPage(
@@ -186,7 +199,7 @@ Future<Uint8List> generatePdfDeliveryNote161(List<dynamic> responseData1, List<d
                       SizedBox(height: 5),
                       Text('${responseData1[0]['RegionName']??""},India-Phone: +914471131343 / 344 ',style: fontSize8),
                       SizedBox(height: 5),
-                      Text('GSTN No :${responseData1[0]['TaxNumber3']??""}',style: fontSize8),
+                      Text('GSTN No :$gstNumber',style: fontSize8),
                       SizedBox(height: 10),
                     ])
                   ]),
@@ -1136,7 +1149,20 @@ Future<Uint8List> generatePdfDeliveryNote541(List<dynamic> responseData1, List<d
     }
     return formattedNumber;
   }
-
+  String gstNumber='';
+  ///GST Number.
+  try{
+    if(responseData1[0]['Plant']=="1101" || responseData1[0]['Plant']=="1102" || responseData1[0]['Plant']=="1103" || responseData1[0]['Plant']=="1104"
+        || responseData1[0]['Plant']=="1105" || responseData1[0]['Plant']=="1107"){
+      gstNumber = "33AACCJ0197Q1Z7";
+    }
+    else if(responseData1[0]['Plant']=="1106"){
+      gstNumber ="03AACCJ0197Q1ZA";
+    }
+  }
+  catch(e){
+    print('--------Exception Plant------');
+  }
 
   pdf.addPage(
     MultiPage(
@@ -1258,7 +1284,7 @@ Future<Uint8List> generatePdfDeliveryNote541(List<dynamic> responseData1, List<d
                       SizedBox(height: 5),
                       Text('${responseData1[0]['RegionName']??""},India-Phone: +914471131343 / 344 ',style: fontSize8),
                       SizedBox(height: 5),
-                      Text('GSTN No :${responseData1[0]['TaxNumber3']??""}',style: fontSize8),
+                      Text('GSTN No :$gstNumber',style: fontSize8),
                       SizedBox(height: 10),
                     ])
                   ]),
@@ -2189,7 +2215,6 @@ Future<Uint8List> generatePdfDeliveryZ41(List<dynamic> responseData1, List<dynam
   print('-----Goods Type---');
   print(responseData2[0]['GoodsMovementType']);
   final converter = AmountToWords();
-
   ///Styles.
   // TextStyle blueGrey200 = const TextStyle(color: PdfColors.blueGrey300);
   //TextStyle fontSize9WithBold =  TextStyle(fontWeight: FontWeight.bold,fontSize: 9);
@@ -2241,7 +2266,20 @@ Future<Uint8List> generatePdfDeliveryZ41(List<dynamic> responseData1, List<dynam
     }
     return formattedNumber;
   }
-
+  String gstNumber='';
+  ///GST Number.
+  try{
+    if(responseData1[0]['Plant']=="1101" || responseData1[0]['Plant']=="1102" || responseData1[0]['Plant']=="1103" || responseData1[0]['Plant']=="1104"
+        || responseData1[0]['Plant']=="1105" || responseData1[0]['Plant']=="1107"){
+      gstNumber = "33AACCJ0197Q1Z7";
+    }
+    else if(responseData1[0]['Plant']=="1106"){
+      gstNumber ="03AACCJ0197Q1ZA";
+    }
+  }
+  catch(e){
+    print('--------Exception Plant------');
+  }
 
   pdf.addPage(
     MultiPage(
@@ -2363,7 +2401,7 @@ Future<Uint8List> generatePdfDeliveryZ41(List<dynamic> responseData1, List<dynam
                       SizedBox(height: 5),
                       Text('${responseData1[0]['RegionName']??""},India-Phone: +914471131343 / 344 ',style: fontSize8),
                       SizedBox(height: 5),
-                      Text('GSTN No :${responseData1[0]['TaxNumber3']??""}',style: fontSize8),
+                      Text('GSTN No :$gstNumber',style: fontSize8),
                       SizedBox(height: 10),
                     ])
                   ]),
@@ -3304,6 +3342,64 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
   print(responseData2[0]['GoodsMovementType']);
   final converter = AmountToWords();
 
+  String modeOfTransport ='';
+  String vehicleNo = "";
+  String requestedBy= "";
+  String preparedBy = "";
+  String receivingPlant="";
+  String purposeOfTransport = "";
+  try{
+    for(int i=0;i<responseData2.length;i++){
+      if(responseData2[i]['MaterialDocumentItem']=="1"){
+
+        ///ModeOfTransPort.
+        if(responseData2[i]['YY1_ModeOftransport2_MMI']!="" && responseData2[i]['YY1_ModeOftransport2_MMI']!=null){
+          // print('------------------------------Mode Of Transport================');
+          // print(responseData2[i]['YY1_ModeOftransport2_MMI']);
+          modeOfTransport = responseData2[i]['YY1_ModeOftransport2_MMI'];
+        }
+
+        ///Vehicle No.
+        if(responseData2[i]['YY1_VehicleNo_MMI']!="" && responseData2[i]['YY1_VehicleNo_MMI']!=null){
+          // print('------------Vehicle No-----------');
+          // print(responseData2[i]['YY1_VehicleNo_MMI']);
+          vehicleNo = responseData2[i]['YY1_VehicleNo_MMI'];
+        }
+
+        ///Requested By.
+        if(responseData2[i]['YY1_RequestedBy1_MMI']!="" && responseData2[i]['YY1_RequestedBy1_MMI']!=null){
+
+          // print('-----------Requested By-----------');
+          // print(responseData2[i]['YY1_RequestedBy1_MMI']);
+          requestedBy = responseData2[i]['YY1_RequestedBy1_MMI'];
+        }
+        ///Prepared By.
+        if(responseData2[i]['YY1_PreparedBy1_MMI']!="" && responseData2[i]['YY1_PreparedBy1_MMI']!=null){
+          // print('---------Prepared By----------');
+          // print(responseData2[i]['YY1_PreparedBy1_MMI']);
+          preparedBy = responseData2[i]['YY1_PreparedBy1_MMI'];
+        }
+        ///Receving Plant.
+        if(responseData2[i]['YY1_ReceivingStorageL1_MMI']!="" && responseData2[i]['YY1_ReceivingStorageL1_MMI']!=null){
+          print('-----------Receving Plant------------');
+          print(responseData2[i]['YY1_ReceivingStorageL1_MMI']);
+          receivingPlant = responseData2[i]['YY1_ReceivingStorageL1_MMI'];
+        }
+        ///Purpose Of Transport.
+        if(responseData2[i]['YY1_PurposeofTransport_MMI']!="" && responseData2[i]['YY1_PurposeofTransport_MMI']!=null){
+          // print('------------Purpose Of Transport------------');
+          // print(responseData2[i]['YY1_PurposeofTransport_MMI']);
+          purposeOfTransport = responseData2[i]['YY1_PurposeofTransport_MMI'];
+
+        }
+
+      }
+    }
+  }
+  catch(e){
+    print('--------------Exception-----------------');
+    print(e);
+  }
   ///Styles.
   // TextStyle blueGrey200 = const TextStyle(color: PdfColors.blueGrey300);
   //TextStyle fontSize9WithBold =  TextStyle(fontWeight: FontWeight.bold,fontSize: 9);
@@ -3474,7 +3570,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                       // Text("ORIGINAL FOR RECIPIENT",style: fontSize8)
                     ) ),
               ),
-              //Second.
+              // //Second.
               Row(crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Image(image, width: 100, height: 100),
@@ -3494,7 +3590,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                       SizedBox(height: 10),
                     ])
                   ]),
-              //Third
+              // //Third
               Container(
                 decoration:  BoxDecoration(
                   border: Border(
@@ -3511,7 +3607,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                     )
                 ),
               ),
-              //four
+              // //four
               Row(children: [
                 Expanded(flex: 2,child:Container(
                     height: 120,
@@ -3595,7 +3691,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                 ),)
 
               ]),
-              //five.
+              // //five.
               Container( height: 30,
                   decoration:  BoxDecoration(
                     border: Border(
@@ -3606,7 +3702,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                   child: Row(children: [
                     Expanded(flex: 1,child: Padding(padding: const EdgeInsets.only(left: 5),
                         child: Text('Mode Of Transport',style: fontSize8WidthBold))),
-                    Expanded(flex: 1,child: Text('${responseData2[0]['YY1_ModeOftransport2_MMI']??""}',style: fontSize8)),
+                    Expanded(flex: 1,child: Text(modeOfTransport,style: fontSize8)),
                     Expanded(flex: 1,child: Row(
                       //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -3622,7 +3718,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                     ))
                   ])
               ),
-              //six
+              // //six
               Container( height: 60,
                   decoration:  BoxDecoration(
                     border: Border(
@@ -3635,7 +3731,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                       Expanded(flex: 1,child: Padding(padding: const EdgeInsets.only(left: 5),
                           child: Text('Vehicle No',style: fontSize8WidthBold))),
                       //GMT 541.
-                      Expanded(flex: 1,child: Text('${responseData2[0]['YY1_VehicleNo_MMI']??""}',style: fontSize9)),
+                      Expanded(flex: 1,child: Text(vehicleNo,style: fontSize9)),
                       Expanded(flex: 1,child: Row(
                         //mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
@@ -3670,7 +3766,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                             Container(height: 30,width: 0.5,color: PdfColors.black),
                             // Padding(padding: EdgeInsets.only(left: 50),child: Container(height: 30,width: 0.5,color: PdfColors.black))
                           ])),
-                      Expanded(flex: 1,child: Padding(padding: const EdgeInsets.only(left: 5),child: Text('${responseData1[0]['Plant']??""}-${responseData1[0]['PlantName_1']??""}(${responseData2[0]['YY1_ReceivingStorageL1_MMI']??""})',style:fontSize9)))
+                      Expanded(flex: 1,child: Padding(padding: const EdgeInsets.only(left: 5),child: Text('${responseData1[0]['Plant']??""}-${responseData1[0]['PlantName_1']??""}($receivingPlant)',style:fontSize9)))
                     ])
                   ])
               ),
@@ -3730,11 +3826,11 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
 
                     //double price = double.parse(responseData1[i]['StandardPrice']??"");
                     try{
-                      print('-------try---');
+                      //print('-------try---');
 
                       if(responseData1[i]["StandardPrice"]!="" && responseData1[i]['StandardPrice']!="0.00"){
-                        print('-----if-----');
-                        print(responseData1[i]["StandardPrice"]);
+                        // print('-----if-----');
+                        // print(responseData1[i]["StandardPrice"]);
                         price = double.parse(responseData1[i]['StandardPrice']);
                       }
                       else if(responseData1[i]['MovingAveragePrice']!=""  && responseData1[i]['MovingAveragePrice']!="0.00"){
@@ -3840,8 +3936,8 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                     //   totalAmount = totalValue;
                     // }
 
-                    print('--------totalAmount---------');
-                    print(totalAmount);
+                    // print('--------totalAmount---------');
+                    // print(totalAmount);
                     //TaxCodes Filter.
                     if(responseData1[i]['TaxCode']=='V5' ||
                         responseData1[i]['TaxCode']=='V6' ||
@@ -3849,13 +3945,13 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                         || responseData1[i]['TaxCode']=='V8'){
 
                       taxCodes="TaxCodesV5V6V7V8";
-                      print('----taxCodes----');
-                      print(taxCodes);
+                      // print('----taxCodes----');
+                      // print(taxCodes);
                     }
                     else{
                       taxCodes="TaxCodesV0V1V2V3V4";
-                      print('----taxCodes----');
-                      print(taxCodes);
+                      // print('----taxCodes----');
+                      // print(taxCodes);
                     }
                     return Column(
                         children: [
@@ -3873,7 +3969,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
 
                                 Container(height: 25,width: 0.5,color: PdfColors.black),
                                 Expanded(flex: 1,child: Padding(padding: const EdgeInsets.only(left: 5),
-                                    child: Text('${responseData1[i]['Material']??""}',style: fontSize8)
+                                    child: Text('${responseData1[i]['Material_1']??""}',style: fontSize8)
                                 )),
                                 Container(height: 25,width: 0.5,color: PdfColors.black),
                                 Expanded(flex: 3,child: Padding(padding:const EdgeInsets.only(left: 5),
@@ -3956,7 +4052,7 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                                   child: Row(children: [
                                     Text('Purpose of Transport',style: fontSize8WidthBold),
                                     Text(":"),
-                                    Text("${responseData2[0]['YY1_PurposeofTransport_MMI']??""}",style: fontSize8WidthBold),
+                                    Text(purposeOfTransport,style: fontSize8WidthBold),
 
                                   ])
                               )),
@@ -4356,13 +4452,13 @@ Future<Uint8List> generatePdfDelivery303(List<dynamic> responseData1, List<dynam
                             Row(children: [
                               Text('Requested By',style: fontSize8WidthBold),
                               Text(" :",style: fontSize8WidthBold),
-                              Text('${responseData2[0]['YY1_RequestedBy1_MMI']??""}',style: fontSize8),
+                              Text(requestedBy,style: fontSize8),
 
                             ]),
                             Row(children: [
                               Text('Prepared By',style: fontSize8WidthBold),
                               Text(" :",style: fontSize8WidthBold),
-                              Text('${responseData2[0]['YY1_PreparedBy1_MMI']??""}',style: fontSize8),
+                              Text(preparedBy,style: fontSize8),
 
                             ])
                           ])

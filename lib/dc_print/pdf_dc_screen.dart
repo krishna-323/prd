@@ -40,6 +40,8 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
         pdfBytes=  await generatePdfDeliveryZ41(responseData1,responseData2);
       }
       else if(responseData2[0]['GoodsMovementType']=='303'){
+        // print('---------------GoodsMovementType------------------');
+        // print(responseData2[0]['GoodsMovementType']);
         pdfBytes=  await generatePdfDelivery303(responseData1,responseData2);
       }
 
@@ -68,7 +70,7 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
       anchor.remove();
     }
     catch(e){
-      print("-----Exception---");
+      print("-----Exception--From Movement Type--------------");
       print(e);
       // if(mounted){
       //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("TooManyPages Found Please Enter Another DC Number."),
@@ -176,8 +178,10 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
 
   //Goods Movement Type 303.
   Future fetchData303(String dcNumber, List<dynamic> responseGoodsMovementType)async{
-    String url1new ="${StaticData.apiURL}/YY1_GOODS_MOVEMENT_303_CDS/YY1_Goods_movement_303?filter=MaterialDocument eq '$dcNumber' and IsAutomaticallyCreated eq  ''";
-
+    ///Old API.
+    //String url1new ="${StaticData.apiURL}/YY1_GOODS_MOVEMENT_303_CDS/YY1_Goods_movement_303?filter=MaterialDocument eq '$dcNumber' and IsAutomaticallyCreated eq  ''";
+    ///New Api.
+    String url1new ="${StaticData.apiURL}/YY1_303_MOVE_TYPE_CDS/YY1_303_MOVE_TYPE?format=json&filter=MaterialDocument eq '$dcNumber' and IsAutomaticallyCreated eq ''";
 
     final res161= await http.get(Uri.parse(url1new),
       headers: {
@@ -224,7 +228,10 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
 
   //Goods Movement Type API.
   Future getGoodsMovementType(String dcNumber)async{
-    String url2 = "${StaticData.apiURL}/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem?format=json&filter=MaterialDocument eq '$dcNumber' and IsAutomaticallyCreated eq ''";
+    ///Old.
+    //String url2 = "${StaticData.apiURL}/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem?format=json&filter=MaterialDocument eq '$dcNumber' and IsAutomaticallyCreated eq ''";
+    ///New.
+    String url2= "${StaticData.apiURL}/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem?format=json&filter=MaterialDocument eq '$dcNumber' and IsAutomaticallyCreated eq ''";
 
     final resData1 = await http.get(Uri.parse(url2),
       headers: {
@@ -285,7 +292,7 @@ class _DcPdfGeneratorState extends State<DcPdfGenerator> {
     }
 
     catch(e){
-      print('----------Exception---------');
+      print('----------Exception---Form--API CALL----');
       print(e);
     }
   }
