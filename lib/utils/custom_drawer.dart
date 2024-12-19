@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../bill_print/bill_print_generator.dart';
 import '../dc_print/pdf_dc_screen.dart';
 import '../home/home_screen.dart';
 import '../inward/inward_list.dart';
@@ -29,6 +30,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   bool dcPrintHover=false;
   bool dcExpand=false;
+  //Bill print.
+  bool billPrintHover = false;
+  bool billExpand = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -48,6 +52,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
     else if (_selectedDestination == 3) {
       dcPrintHover = true;
       dcExpand = false;
+    }
+    else if(_selectedDestination == 4){
+      billPrintHover = true;
+      billExpand = false;
     }
   }
   @override
@@ -277,6 +285,60 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         padding: const EdgeInsets.only(left: 10.0),
                         child: Text(
                           drawerWidth == 60 ? '' : 'DC Print',
+                          style: const TextStyle(fontSize: 17,color: Colors.black),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              ///Bill Print
+              drawerWidth == 60 ? InkWell(
+                hoverColor: mHoverColor,
+                onTap: (){
+                  setState(() {
+                    drawerWidth = 190;
+                  });
+                },
+                child: SizedBox(
+                  height: 40,
+                  child: Icon(Icons.print,
+                    color: _selectedDestination == 4 ? Colors.blue: Colors.black54,
+                  ),
+                ),
+              ) :
+              MouseRegion(
+                onHover: (event){
+                  setState((){
+                    // outwardHover =true;
+                    // inwardHover=false;
+                  });
+                },
+                onExit: (event){
+                  setState(() {
+                    // outwardHover=false;
+                  });
+                },
+                child: Container(
+                  color: billPrintHover?mHoverColor:Colors.transparent,
+                  child: ListTileTheme(
+                    contentPadding: const EdgeInsets.only(left: 0),
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) =>  BillPrintScreen(
+                          drawerWidth: widget.drawerWidth,
+                          selectedDestination: 4,
+                          //plantValue: widget.plantValue,
+                        ),));
+                      },
+                      leading: const SizedBox(width: 40,child: Padding(
+                        padding: EdgeInsets.only(left: 20.0),
+                        child: Icon(Icons.print),
+                      ),),
+                      title:    Padding(
+                        padding: const EdgeInsets.only(left: 10.0),
+                        child: Text(
+                          drawerWidth == 60 ? '' : 'Bill Print',
                           style: const TextStyle(fontSize: 17,color: Colors.black),
                         ),
                       ),
